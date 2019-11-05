@@ -100,6 +100,25 @@ Note that this launch file launches both the driver and the decoder, which is th
 
 ## Bug Report
 
+# 1.硬件连接
+首先连接雷达网线和电源线，根据雷达设置目标IP设置电脑有线连接IP地址（默认为192.168.1.102），当电脑有线网络衔接正常后，测试是否可以ping通，之后在通过
+```
+sudo tcpdump -n -i eth0
+```
+eth0为有线网络设备名，如果最后为1206个字节，则表示雷达数据发送正常
+
+# 2.软件操作
+创建ros工作空间，并在src文件夹下下载驱动
+```
+git clone https://github.com/zhangzhouyuan/lslidar_c16
+```
+编译
+```
+roslaunch lslidar_c16_decoder c16.launch
+
+```
+备注：若修改了雷达目的端口及转速，请打开 lslidar_c16.launch 进行相应的修改配置，默认端口为 2368，转速为 10HZ 即 point_num 为 2000 点。
+
 
 
 
