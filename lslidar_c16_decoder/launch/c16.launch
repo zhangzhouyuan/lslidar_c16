@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+
+<launch>
+    <master auto="start"/>
+
+    <!-- laser -->
+    <include file="$(find lslidar_c16_decoder)/launch/lslidar_c16.launch" />
+    <!-- rviz -->
+    <include file="$(find lslidar_c16_decoder)/launch/rviz.launch" />
+
+</launch>
+

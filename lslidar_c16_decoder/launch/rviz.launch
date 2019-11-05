@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+
+<launch>
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find lslidar_c16_decoder)/rviz/rviz.rviz"/>
+</launch>
