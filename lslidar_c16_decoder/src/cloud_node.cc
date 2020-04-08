@@ -15,21 +15,20 @@
  * along with the driver.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <lslidar_c16_decoder/lslidar_c16_decoder_nodelet.h>
+#include "lslidar_c16_decoder/convert.h"
 
-namespace lslidar_c16_decoder {
+/** Main node entry point. */
+int main(int argc, char** argv)
+{
+  ros::init(argc, argv, "lslidar_decoder_node");
+  ros::NodeHandle node;
+  ros::NodeHandle priv_nh("~");
 
-void LslidarC16DecoderNodelet::onInit() {
-  decoder.reset(new LslidarC16Decoder(
-        getNodeHandle(), getPrivateNodeHandle()));
-  if(!decoder->initialize()) {
-    ROS_ERROR("Cannot initialize the lslidar puck decoder...");
-    return;
-  }
-  return;
+  // create conversion class, which subscribes to raw data
+  lslidar_c16_decoder::Convert conv(node, priv_nh);
+
+  // handle callbacks until shut down
+  ros::spin();
+
+  return 0;
 }
-
-} // end namespace lslidar_c16_decoder
-
-PLUGINLIB_DECLARE_CLASS(lslidar_c16_decoder, LslidarC16Nodelet,
-    lslidar_c16_decoder::LslidarC16DecoderNodelet, nodelet::Nodelet);

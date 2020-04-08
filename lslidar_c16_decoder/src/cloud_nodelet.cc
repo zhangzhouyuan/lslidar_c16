@@ -1,5 +1,5 @@
 /*
- * This file is part of lslidar_c16 driver.
+ * This file is part of lslidar_n301 driver.
  *
  * The driver is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,29 +15,36 @@
  * along with the driver.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LSLIDAR_C16_DECODER_NODELET_H
-#define LSLIDAR_C16_DECODER_NODELET_H
-
 #include <ros/ros.h>
 #include <pluginlib/class_list_macros.h>
 #include <nodelet/nodelet.h>
 
-#include <lslidar_c16_decoder/lslidar_c16_decoder.h>
+#include "lslidar_c16_decoder/convert.h"
 
-namespace lslidar_c16_decoder {
-class LslidarC16DecoderNodelet: public nodelet::Nodelet {
+namespace lslidar_c16_decoder
+{
+class LslidarC16DecoderNodelet : public nodelet::Nodelet
+{
 public:
-
-  LslidarC16DecoderNodelet() {}
-  ~LslidarC16DecoderNodelet() {}
+  LslidarC16DecoderNodelet()
+  {
+  }
+  ~LslidarC16DecoderNodelet()
+  {
+  }
 
 private:
-
   virtual void onInit();
-  LslidarC16DecoderPtr decoder;
+  boost::shared_ptr<Convert> conv_;
 };
 
-} // end namespace lslidar_n301_decoder
+/** @brief Nodelet initialization. */
+void LslidarC16DecoderNodelet::onInit()
+{
+  conv_.reset(new Convert(getNodeHandle(), getPrivateNodeHandle()));
+}
 
+}  // namespace lslidar_c16_decoder
 
-#endif
+// parameters: class type, base class type
+PLUGINLIB_EXPORT_CLASS(lslidar_c16_decoder::LslidarC16DecoderNodelet, nodelet::Nodelet)

@@ -1,14 +1,15 @@
 <launch>
 
-  <node pkg="lslidar_c16_driver" type="lslidar_c16_driver_node" name="lslidar_c16_driver_node" output="screen" ns="LeftLidar" launch-prefix="gnome-terminal -e">
+  <node pkg="lslidar_c16_driver" type="lslidar_c16_driver_node" name="lslidar_c16_driver_node" output="screen" ns="LeftLidar">
     <param name="frame_id" value="laser_link_left"/>
-    <param name="device_ip" value="192.168.1.200"/>
-     <param name="group_ip" value="224.1.1.2"/> 
+    <param name="lidar_ip" value="192.168.1.200"/>
+     <param name="group_ip" value="224.1.1.2"/>
+    <param name="add_multicast" value="false"/>
     <param name="device_port" value="2368"/>
   </node>
 
   <node pkg="lslidar_c16_decoder" type="lslidar_c16_decoder_node" name="lslidar_c16_decoder_node" output="screen" ns="LeftLidar" >
-    <param name="child_frame_id" value="laser_link_left"/>
+    <param name="frame_id" value="laser_link_left"/>
     <param name="point_num" value="2000"/>
     <param name="channel_num" value="8"/>
     <param name="angle_disable_min" value="0"/>
@@ -19,20 +20,21 @@
     <param name="max_range" value="150.0"/>
     <param name="frequency" value="10.0"/>
     <param name="publish_point_cloud" value="true"/>
-    <param name="publish_channels" value="true"/>
+    <param name="publish_scan" value="true"/>
     <param name="use_gps_ts" value="false"/>
   </node>
   
   
-  <node pkg="lslidar_c16_driver" type="lslidar_c16_driver_node" name="lslidar_c16_driver_node" output="screen" ns="RightLidar" launch-prefix="gnome-terminal -e">
+  <node pkg="lslidar_c16_driver" type="lslidar_c16_driver_node" name="lslidar_c16_driver_node" output="screen" ns="RightLidar">
     <param name="frame_id" value="laser_link_right"/>
-    <param name="device_ip" value="192.168.1.201"/>
-     <param name="group_ip" value="224.1.1.1"/> 
+    <param name="lidar_ip" value="192.168.1.201"/>
+     <param name="group_ip" value="224.1.1.1"/>
+    <param name="add_multicast" value="false"/>
     <param name="device_port" value="2369"/>
   </node>
 
   <node pkg="lslidar_c16_decoder" type="lslidar_c16_decoder_node" name="lslidar_c16_decoder_node" output="screen" ns="RightLidar">
-    <param name="child_frame_id" value="laser_link_right"/>
+    <param name="frame_id" value="laser_link_right"/>
     <param name="point_num" value="2000"/>
     <param name="channel_num" value="8"/>
     <param name="angle_disable_min" value="0"/>
@@ -43,7 +45,7 @@
     <param name="max_range" value="150.0"/>
     <param name="frequency" value="10.0"/>
     <param name="publish_point_cloud" value="true"/>
-    <param name="publish_channels" value="true"/>
+    <param name="publish_scan" value="true"/>
     <param name="use_gps_ts" value="false"/>
   </node>
 

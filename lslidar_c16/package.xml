@@ -5,6 +5,8 @@
   <description>
     Basic ROS support for the Leishen C16 LIDARs.
   </description>
+
+  <url>http://www.ros.org/wiki/lslidar_c16</url>
   <maintainer email="yutongyan@lslidar.com">Yutong</maintainer>
   <author>Yutong</author>
   <license>GNU General Public License V3.0</license>

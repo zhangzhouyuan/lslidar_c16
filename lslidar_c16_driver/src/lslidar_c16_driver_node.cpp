@@ -1,5 +1,5 @@
 /*
- * This file is part of lslidar_n301 driver.
+ * This file is part of lslidar_c16 driver.
  *
  * The driver is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,34 +15,33 @@
  * along with the driver.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string>
-#include <boost/thread.hpp>
-
 #include <ros/ros.h>
-#include <pluginlib/class_list_macros.h>
-#include <nodelet/nodelet.h>
+#include "lslidar_c16_driver/lslidar_c16_driver.h"
+#include "std_msgs/String.h"
 
-#include <lslidar_c16_driver/lslidar_c16_driver.h>
+using namespace lslidar_c16_driver;
+volatile sig_atomic_t flag = 1;
 
-namespace lslidar_c16_driver
+static void my_handler(int sig)
 {
+  flag = 0;
+}
 
-class LslidarC16DriverNodelet: public nodelet::Nodelet
+int main(int argc, char** argv)
 {
-public:
+  ros::init(argc, argv, "lslidar_c16_driver");
+  ros::NodeHandle node;
+  ros::NodeHandle private_nh("~");
 
-  LslidarC16DriverNodelet();
-  ~LslidarC16DriverNodelet();
+  signal(SIGINT, my_handler);
 
-private:
+  // start the driver
+  lslidar_c16_driver::lslidarDriver dvr(node, private_nh);
+  // loop until shut down or end of file
+  while (ros::ok() && dvr.poll())
+  {
+    ros::spinOnce();
+  }
 
-  virtual void onInit(void);
-  virtual void devicePoll(void);
-
-  volatile bool running;               ///< device thread is running
-  boost::shared_ptr<boost::thread> device_thread;
-
-  LslidarC16DriverPtr lslidar_c16_driver; ///< driver implementation class
-};
-
-} // namespace lslidar_driver
+  return 0;
+}

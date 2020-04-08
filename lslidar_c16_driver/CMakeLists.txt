@@ -1,86 +1,77 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(lslidar_c16_driver)
 
-add_definitions(-std=c++0x)
+add_compile_options(-std=c++11)
+set(CMAKE_BUILD_TYPE Release)#RelWithDebInfo
+## Find catkin macros and libraries
+## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
+## is used, also find other catkin packages
+set(${PROJECT_NAME}_CATKIN_DEPS
+    angles
+    pcl_ros
+    roscpp
+    sensor_msgs
+    tf
+    dynamic_reconfigure
+    lslidar_c16_msgs
+    nodelet
+)
 
+set(libpcap_LIBRARIES -lpcap)
 
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  diagnostic_updater
-  nodelet
-
-  lslidar_c16_msgs
+	${${PROJECT_NAME}_CATKIN_DEPS}
+  pcl_conversions
+  rospy
+	std_msgs
+  genmsg
+  cv_bridge
+  message_generation
 )
 
-find_package(Boost REQUIRED)
+find_package(Boost COMPONENTS signals)
+find_package(Boost REQUIRED COMPONENTS thread)
+find_package(PkgConfig REQUIRED)
 
-catkin_package(
-  INCLUDE_DIRS include
-#  LIBRARIES lslidar_c16_driver
-  CATKIN_DEPENDS
-    roscpp diagnostic_updater nodelet
-    lslidar_c16_msgs
-  DEPENDS
-    boost
-)
 
 include_directories(
-  include
-  ${Boost_INCLUDE_DIR}
-  ${catkin_INCLUDE_DIRS}
-)
+		include
+		${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS}
+	${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake)
 
-link_directories(
-  ${catkin_LIBRARY_DIRS}
-)
 
-# Leishen c16 lidar driver
-add_library(lslidar_c16_driver
-  src/lslidar_c16_driver.cc
-)
+catkin_package(
+    CATKIN_DEPENDS ${${PROJECT_NAME}_CATKIN_DEPS}
+    CATKIN_DEPENDS message_runtime std_msgs
+    )
+
+
+add_library(lslidar_input src/input.cc)
+target_link_libraries(lslidar_input
+		${catkin_LIBRARIES}
+		${libpcap_LIBRARIES})
+
+add_library(lslidar_c16_driver src/lslidar_c16_driver.cpp)
 target_link_libraries(lslidar_c16_driver
-  ${catkin_LIBRARIES}
-)
-add_dependencies(lslidar_c16_driver
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
+		lslidar_input
+		${catkin_LIBRARIES})
 
-# Leishen c16 lidar nodelet
-add_executable(lslidar_c16_driver_node
-  src/lslidar_c16_driver_node.cc
-)
-target_link_libraries(lslidar_c16_driver_node
-  lslidar_c16_driver
-  ${catkin_LIBRARIES}
-)
-add_dependencies(lslidar_c16_driver_node
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-
-# Leishen c16 lidar nodelet
-add_library(lslidar_c16_driver_nodelet
-  src/lslidar_c16_driver_nodelet.cc
-)
+# build the nodelet version
+add_library(lslidar_c16_driver_nodelet src/lslidar_c16_nodelet.cc src/lslidar_c16_driver.cpp)
 target_link_libraries(lslidar_c16_driver_nodelet
-  lslidar_c16_driver
-  ${catkin_LIBRARIES}
-)
-add_dependencies(lslidar_c16_driver_nodelet
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
+		lslidar_input
+		${catkin_LIBRARIES}
+		)
 
+add_executable(lslidar_c16_driver_node src/lslidar_c16_driver_node.cpp)
 
-# install options
-# install(TARGETS lslidar_c16_driver_node
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+if(catkin_EXPORTED_TARGETS)
+	add_dependencies(lslidar_input ${catkin_EXPORTED_TARGETS})
+endif()
 
-# install(DIRECTORY launch
-#         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-# )
-
+target_link_libraries(lslidar_c16_driver_node
+		lslidar_c16_driver
+		lslidar_input
+		${catkin_LIBRARIES}
+		${libpcap_LIBRARIES}
+		)

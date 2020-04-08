@@ -15,85 +15,72 @@
  * along with the driver.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LSLIDAR_C16_DRIVER_H
-#define LSLIDAR_C16_DRIVER_H
+#ifndef _LS_C16_DRIVER_H_
+#define _LS_C16_DRIVER_H_
 
-#include <unistd.h>
-#include <stdio.h>
-#include <netinet/in.h>
 #include <string>
-
-#include <boost/shared_ptr.hpp>
-
 #include <ros/ros.h>
-#include <diagnostic_updater/diagnostic_updater.h>
-#include <diagnostic_updater/publisher.h>
+#include <ros/package.h>
+#include <std_msgs/Int32.h>
+#include <pcl/point_types.h>
+#include <pcl_ros/impl/transforms.hpp>
+#include <pcl_conversions/pcl_conversions.h>
+#include "input.h"
 
-#include <lslidar_c16_msgs/LslidarC16Packet.h>
-#include <lslidar_c16_msgs/LslidarC16ScanUnified.h>
-
-namespace lslidar_c16_driver {
-
-//static uint16_t UDP_PORT_NUMBER = 8080;
-static uint16_t PACKET_SIZE = 1206;
-
-class LslidarC16Driver {
+namespace lslidar_c16_driver
+{
+class lslidarDriver
+{
 public:
+  /**
+ * @brief lslidarDriver
+ * @param node          raw packet output topic
+ * @param private_nh    通过这个节点传参数
+ */
+  lslidarDriver(ros::NodeHandle node, ros::NodeHandle private_nh);
 
-    LslidarC16Driver(ros::NodeHandle& n, ros::NodeHandle& pn);
-    ~LslidarC16Driver();
-
-    bool initialize();
-    bool polling();
-
-    void initTimeStamp(void);
-    void getFPGA_GPSTimeStamp(lslidar_c16_msgs::LslidarC16PacketPtr &packet);
-
-    typedef boost::shared_ptr<LslidarC16Driver> LslidarC16DriverPtr;
-    typedef boost::shared_ptr<const LslidarC16Driver> LslidarC16DriverConstPtr;
+  ~lslidarDriver();
+  bool poll(void);
+  void difopPoll(void);
 
 private:
+  /// Callback for skip num for time synchronization
+  void skipNumCallback(const std_msgs::Int32::ConstPtr& skip_num);
 
-    bool loadParameters();
-    bool createRosIO();
-    bool openUDPPort();
-    int getPacket(lslidar_c16_msgs::LslidarC16PacketPtr& msg);
+  // configuration parameters
+  struct
+  {
+    std::string frame_id;  ///< tf frame ID
+    std::string model;     ///< device model name
+    int npackets;          ///< number of packets to collect
+    double rpm;            ///< device rotation rate (RPMs)
+    double time_offset;    ///< time in seconds added to each  time stamp
+    int cut_angle;
+    int return_mode;     //return wave number
+  } config_;
 
-    // Ethernet relate variables
-    std::string lidar_ip_string;
-    std::string group_ip_string;
-    in_addr lidar_ip;
-    int UDP_PORT_NUMBER;
-    int socket_id;
-    int cnt_gps_ts;
-    bool use_gps_;
-	bool add_multicast;
-    // ROS related variables
-    ros::NodeHandle nh;
-    ros::NodeHandle pnh;
-    ros::Publisher packet_pub;    
+  boost::shared_ptr<Input> msop_input_;
+  boost::shared_ptr<Input> difop_input_;
+  ros::Publisher msop_output_;
+  ros::Publisher difop_output_;
+  ros::Publisher output_sync_;
+  // Converter convtor_
+  boost::shared_ptr<boost::thread> difop_thread_;
 
-    // Diagnostics updater
-    diagnostic_updater::Updater diagnostics;
-    boost::shared_ptr<diagnostic_updater::TopicDiagnostic> diag_topic;
-    double diag_min_freq;
-    double diag_max_freq;
+  // add for time synchronization
+  bool time_synchronization_;
+  unsigned char packetTimeStamp[10];
+  uint64_t pointcloudTimeStamp;
+  uint64_t GPSStableTS;
+  uint64_t GPSCountingTS;
+  uint64_t last_FPGA_ts;
+  uint64_t GPS_ts;
+  int cnt_gps_ts;
+  ros::Time timeStamp;
+  uint64_t usec_start;
 
-    uint64_t pointcloudTimeStamp;
-    uint64_t GPSStableTS;
-    uint64_t GPSCountingTS;
-    uint64_t last_FPGA_ts;
-    uint64_t GPS_ts;
-    unsigned char packetTimeStamp[10];
-    struct tm cur_time;
-    unsigned short int us;
-    unsigned short int ms;
-    ros::Time timeStamp;
 };
 
-typedef LslidarC16Driver::LslidarC16DriverPtr LslidarC16DriverPtr;
-typedef LslidarC16Driver::LslidarC16DriverConstPtr LslidarC16DriverConstPtr;
+}  // namespace lslidar_driver
 
-} // namespace lslidar_driver
-
-#endif // _LSLIDAR_C16_DRIVER_H_
+#endif
